@@ -3,7 +3,6 @@ package main
 import (
 	"errors"
 	"fmt"
-	"html/template"
 	"net/http"
 	"strconv"
 
@@ -19,30 +18,13 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 	snippets, err := app.snippets.Latest()
 	if err != nil {
 		app.serverError(w, err)
-	}
-
-	fmt.Println(snippets)
-
-	files := []string{
-		"./ui/html/home.page.tmpl", // must be the first element
-		"./ui/html/base.layout.tmpl",
-		"./ui/html/footer.partial.tmpl",
-	}
-
-	// parsing template
-	ts, err := template.ParseFiles(files...)
-	if err != nil {
-		app.errorLog.Println(err.Error())
-		app.serverError(w, err)
 		return
 	}
 
-	err = ts.Execute(w, nil)
-	if err != nil {
-		app.serverError(w, err)
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-		return
-	}
+	app.render(w, r, "home.page.tmpl", &templateData{
+		Snippets: snippets,
+	})
+
 }
 
 func (app *application) showSnippet(w http.ResponseWriter, r *http.Request) {
@@ -52,15 +34,20 @@ func (app *application) showSnippet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Get snippet
 	s, err := app.snippets.Get(id)
 	if err != nil {
 		if errors.Is(err, models.ErrNoRecord) {
 			app.notFound(w)
+			return
 		}
 		app.serverError(w, err)
+		return
 	}
 
-	fmt.Fprintf(w, "%v", s)
+	app.render(w, r, "show.page.tmpl", &templateData{
+		Snippet: s,
+	})
 }
 
 func (app *application) createSnippet(w http.ResponseWriter, r *http.Request) {
