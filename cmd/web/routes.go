@@ -1,8 +1,14 @@
 package main
 
-import "net/http"
+import (
+	"net/http"
+
+	"github.com/justinas/alice"
+)
 
 func (app *application) routes() http.Handler {
+	stdMiddleware := alice.New(app.recoverPanic, app.logRequest, secureHeaders)
+
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/", app.home)
@@ -13,5 +19,5 @@ func (app *application) routes() http.Handler {
 
 	mux.Handle("/static/", http.StripPrefix("/static", fileServer))
 
-	return secureHeaders(mux)
+	return stdMiddleware.Then(mux)
 }
