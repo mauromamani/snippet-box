@@ -2,17 +2,16 @@ package main
 
 import (
 	"html/template"
-	"net/url"
 	"path/filepath"
 	"time"
 
+	"gitlab.com/mauromamani20014/snippetbox/pkg/forms"
 	"gitlab.com/mauromamani20014/snippetbox/pkg/models"
 )
 
 type templateData struct {
 	CurrentYear int
-	FormData    url.Values // same type as r.PostForm()
-	FormErrors  map[string]string
+	Form        *forms.Form
 	Snippet     *models.Snippet
 	Snippets    []*models.Snippet
 }
