@@ -15,6 +15,10 @@ import (
 	"gitlab.com/mauromamani20014/snippetbox/pkg/models/mysql"
 )
 
+type contextKey string
+
+const contextKeyIsAuthenticated = contextKey("isAuthenticated")
+
 // define app struct
 type application struct {
 	errorLog      *log.Logger
