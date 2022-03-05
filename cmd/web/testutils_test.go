@@ -7,15 +7,35 @@ import (
 	"net/http/cookiejar"
 	"net/http/httptest"
 	"testing"
+	"time"
+
+	"github.com/golangcollege/sessions"
+	"gitlab.com/mauromamani20014/snippetbox/pkg/models/mock"
 )
 
 // Create a newTestApplication helper which returns an instance of our
 // application struct containing mocked dependencies.
 func newTestApplication(t *testing.T) *application {
-	return &application{
-		errorLog: log.New(io.Discard, "", 0),
-		infoLog:  log.New(io.Discard, "", 0),
+	templateCache, err := newTemplateCache("./../../ui/html/")
+	if err != nil {
+		t.Fatal(err)
 	}
+
+	// Create a session manager instance, with the same settings as production.
+	session := sessions.New([]byte("3dSm5MnygFHh7XidAtbskXrjbwfoJcbJ"))
+	session.Lifetime = 12 * time.Hour
+	session.Secure = true
+	// Initialize the dependencies, using the mocks for the loggers and
+	// database models.
+	return &application{
+		errorLog:      log.New(io.Discard, "", 0),
+		infoLog:       log.New(io.Discard, "", 0),
+		session:       session,
+		snippets:      &mock.SnippetModel{},
+		templateCache: templateCache,
+		users:         &mock.UserModel{},
+	}
+
 }
 
 // Define a custom testServer type which anonymously embeds a httptest.Server
